@@ -6,12 +6,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { year, month, day, hour, minute, second, latitude, longitude } = req.body;
+    const { year, month, day, hour, minute, second, latitude, longitude, currentLatitude, currentLongitude } = req.body;
     
     // create natal chart
     const natalChart = createChart(
       parseInt(year),
-      parseInt(month),
+      parseInt(month) - 1,
       parseInt(day),
       parseInt(hour),
       parseInt(minute),
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     // get current date for transit calculations
     const now = new Date();
     
-    // create transit chart for current date
+    // create transit chart for current date using current location
     const transitChart = createChart(
       now.getFullYear(),
       now.getMonth(),
@@ -31,8 +31,8 @@ export default async function handler(req, res) {
       now.getHours(),
       now.getMinutes(),
       now.getSeconds(),
-      parseFloat(latitude),
-      parseFloat(longitude)
+      parseFloat(currentLatitude),
+      parseFloat(currentLongitude)
     );
 
     
@@ -85,19 +85,19 @@ export default async function handler(req, res) {
 }
 
 function createChart(year, month, day, hour, minute, second, latitude, longitude) {
-  year = parseInt(year, 10);
-  month = parseInt(month, 10);
-  day = parseInt(day, 10);
-  hour = parseInt(hour, 10);
-  minute = parseInt(minute, 10);
-  second = parseInt(second, 10) || 0;
+  year = parseInt(year);
+  month = parseInt(month);
+  day = parseInt(day);
+  hour = parseInt(hour);
+  minute = parseInt(minute);
+  second = parseInt(second);
   latitude = parseFloat(latitude);
   longitude = parseFloat(longitude);
   
   try {
     const origin = new Origin({
       year,
-      month: month - 1,
+      month: month,
       date: day,
       hour,
       minute,

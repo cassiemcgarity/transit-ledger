@@ -60,14 +60,16 @@ const getSignFromPosition = (positionString) => {
 
 export default function Home() {
   const [birthData, setBirthData] = useState({
-    year: 1996,
+    year: 2000,
     month: 1,
-    day: 30,
-    hour: 8,
-    minute: 59,
+    day: 1,
+    hour: 12,
+    minute: 0,
     second: 0,
-    latitude: 41.676388,
-    longitude: -86.250275,
+    latitude: 40.7128,
+    longitude: -74.0060,
+    currentLatitude: 40.7128, 
+    currentLongitude: -74.0060,
     period: 'PM'
   });
   
@@ -136,6 +138,46 @@ export default function Home() {
       setResults(null);
       setShowForm(true);
     }, 300);
+  };
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+
+    setLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setBirthData(prev => ({
+          ...prev,
+          currentLatitude: position.coords.latitude,
+          currentLongitude: position.coords.longitude
+        }));
+        setLoading(false);
+      },
+      (error) => {
+        setLoading(false);
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            alert("Location permission denied. Please enable location access or enter coordinates manually.");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            alert("Location information unavailable. Please enter coordinates manually.");
+            break;
+          case error.TIMEOUT:
+            alert("Location request timed out. Please try again or enter coordinates manually.");
+            break;
+          default:
+            alert("An error occurred getting your location. Please enter coordinates manually.");
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }
+    );
   };
 
   return (
@@ -257,7 +299,7 @@ export default function Home() {
                     value={birthData.latitude} 
                     onChange={handleChange} 
                     step="0.000001"
-                    min="-90" 
+                    min="-90"
                     max="90"
                     required 
                   />
@@ -272,7 +314,7 @@ export default function Home() {
                     value={birthData.longitude} 
                     onChange={handleChange} 
                     step="0.000001"
-                    min="-180" 
+                    min="-180"
                     max="180"
                     required 
                   />
@@ -282,6 +324,54 @@ export default function Home() {
                 Tip: You can find your coordinates by searching your birthplace on Google Maps
               </p>
             </div>
+
+            <div className={styles.formSection}>
+              <h2>Current Location</h2>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="currentLatitude">Current Latitude:</label>
+                  <input 
+                    type="number" 
+                    id="currentLatitude"
+                    name="currentLatitude" 
+                    value={birthData.currentLatitude} 
+                    onChange={handleChange} 
+                    step="0.000001"
+                    min="-90"
+                    max="90"
+                    required 
+                  />
+                </div>
+                
+                <div className={styles.formGroup}>
+                  <label htmlFor="currentLongitude">Current Longitude:</label>
+                  <input 
+                    type="number" 
+                    id="currentLongitude"
+                    name="currentLongitude" 
+                    value={birthData.currentLongitude} 
+                    onChange={handleChange} 
+                    step="0.000001"
+                    min="-180"
+                    max="180"
+                    required 
+                  />
+                </div>
+              </div>
+              <div className={styles.formActions}>
+                <button 
+                  type="button"
+                  onClick={getCurrentLocation}
+                  className={`${styles.button} ${styles.secondaryButton}`}
+                  disabled={loading}
+                >
+                  {loading ? 'Getting Location...' : 'Use Current Location'}
+                </button>
+              </div>
+              <p className={styles.hint}>
+                Tip: Click "Use Current Location" or find coordinates on Google Maps
+              </p>
+            </div>
             
             <div className={styles.formActions}>
               <button 
@@ -289,7 +379,7 @@ export default function Home() {
                 className={styles.button}
                 disabled={loading}
               >
-                {loading ? 'Calculating...' : 'Calculate Transits'}
+                {loading ? 'Calculating...' : 'Calculate Transit Chart'}
               </button>
             </div>
           </form>
